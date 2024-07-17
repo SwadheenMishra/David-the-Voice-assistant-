@@ -1,5 +1,6 @@
 import speech_recognition as sr
 from datetime import datetime
+import pyttsx3
 import random
 import elevenlabs
 import elevenlabs.client
@@ -7,8 +8,20 @@ import elevenlabs.client
 # ===this is just to hide my api key===
 import API
 
-APIKEY = API.get_api_key()
-client = elevenlabs.client.ElevenLabs(api_key=APIKEY)
+
+client = None
+Use11LabsApi = False
+
+if not Use11LabsApi:
+    engine = pyttsx3.init('sapi5')
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[0].id)
+    engine.setProperty('rate', 190)
+else:
+    APIKEY = API.get_api_key()
+    client = elevenlabs.client.ElevenLabs(api_key=APIKEY)
+
+    
 # ====================================== 
 
 responses = {
@@ -72,12 +85,17 @@ responses = {
 
 
 def speak(text: str) -> None:
-    global client
-    
-    audio = client.generate(text=text,voice=elevenlabs.Voice(
-            voice_id='TX3LPaxmHKxFdv7VOQHJ',
-            settings=elevenlabs.VoiceSettings(stability=0.71, similarity_boost=0.5, style=0.0, use_speaker_boost=True)
-        ))
+    global client, Use11LabsApi, engine
+
+    if not Use11LabsApi:
+        engine.say(text)
+        engine.runAndWait()
+        return
+    else:
+        audio = client.generate(text=text,voice=elevenlabs.Voice(
+                voice_id='TX3LPaxmHKxFdv7VOQHJ',
+                settings=elevenlabs.VoiceSettings(stability=0.71, similarity_boost=0.5, style=0.0, use_speaker_boost=True)
+            ))
 
     
     elevenlabs.play(audio)
@@ -137,3 +155,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+        
