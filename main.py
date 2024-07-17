@@ -4,8 +4,12 @@ import pyttsx3
 import random
 import elevenlabs
 import elevenlabs.client
+import pygame 
+import gif_pygame
+import threading
+import requests
 
-# ===this is just to hide my api key===
+# ====this is just to hide my api key====
 import API
 
 
@@ -22,7 +26,7 @@ else:
     client = elevenlabs.client.ElevenLabs(api_key=APIKEY)
 
     
-# ====================================== 
+# ======================================= 
 
 responses = {
     'hello': [
@@ -118,6 +122,65 @@ def take_Command() -> str:
         return "None"
     return query
 
+def get_ip(b: bool = False, o: bool = False) -> str:
+    if o:
+        return 'Ofline'
+    
+    if b:
+        return f'{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}'
+    
+    try:
+        return requests.get('https://api.ipify.org').text
+    except:
+        return 'Ofline!'
+
+def run_pygame_hud():
+    pygame.init()
+
+    font = pygame.font.SysFont('Comic Sans MS', 25)
+
+    GREEN = (0, 255, 0)
+    RED = ( 255, 0, 0)
+
+    ip = get_ip(b=True)
+
+    if ip[0] == 'O':
+        IpTextColor = RED
+    else:
+        IpTextColor = GREEN
+
+    screen = pygame.display.set_mode((1400, 800))
+    pygame.display.set_caption("David.")
+
+    aiGif = gif_pygame.load('ai.gif')
+    gif_pygame.transform.scale(aiGif, (720, 410))
+
+    aiHud = pygame.image.load('AiHud.png')
+    # aiHud = pygame.transform.scale(aiHud, (1000, 800))
+
+    aiOpenSound = pygame.mixer.Sound("sf.mp3")
+    pygame.mixer.Sound.play(aiOpenSound)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+        
+
+        # print(pygame.mouse.get_pos())
+
+        IpTxt = font.render(ip, False, IpTextColor)
+        
+        screen.blit(aiHud, (0, 0))
+        aiGif.render(screen, (340, 157))
+        screen.blit(IpTxt, (1142, 340))
+        # pygame.display.flip()
+        pygame.display.update()
+
+    pygame.quit()
+
 def main():
     # resposeHello = ['Hi!']
 
@@ -154,5 +217,5 @@ def main():
         
 
 if __name__ == '__main__':
+    threading.Thread(target=run_pygame_hud).start()
     main()
-        
